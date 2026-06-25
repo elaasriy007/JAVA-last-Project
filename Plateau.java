@@ -2,36 +2,36 @@ class Plateau {
     public static final int TAILLE = 9;
     private Case[][] grille;
 
+    public static final int[] DEFAUT_LIGNE1 = {4, 7, 1, 145, 150, 146, 1, 7, 4};
+    public static final int[] DEFAUT_LIGNE2 = {6, 9, 3, 149, 131, 149, 3, 9, 6};
+    public static final int[] DEFAUT_LIGNE3 = {5, 8, 2, 148, 130, 148, 2, 8, 5};
+
     public Plateau() {
+        this(DEFAUT_LIGNE1, DEFAUT_LIGNE2, DEFAUT_LIGNE3,
+             DEFAUT_LIGNE1, DEFAUT_LIGNE2, DEFAUT_LIGNE3);
+    }
+
+    public Plateau(int[] vertLigne1, int[] vertLigne2, int[] vertLigne3,
+                   int[] rougeLigne1, int[] rougeLigne2, int[] rougeLigne3) {
         grille = new Case[TAILLE][TAILLE];
         for (int i = 0; i < TAILLE; i++) {
             for (int j = 0; j < TAILLE; j++) {
                 grille[i][j] = new Case();
             }
         }
-        initialiser();
+        initialiser(vertLigne1, vertLigne2, vertLigne3,
+                    rougeLigne1, rougeLigne2, rougeLigne3);
     }
 
-    private void initialiser() {
-        int[][] dispositionLigne1 = {4, 7, 1, 145, 150, 146, 3, 7, 4};
-        int[][] dispositionLigne2 = {6, 9, 3, 149, 131, 149, 3, 9, 6};
-
+    private void initialiser(int[] vl1, int[] vl2, int[] vl3,
+                              int[] rl1, int[] rl2, int[] rl3) {
         for (int col = 0; col < TAILLE; col++) {
-            int num1 = dispositionLigne1[col];
-            Pokemon pVert1 = new Pokemon(num1, Type.getEspece(num1));
-            grille[0][col] = new Case(pVert1, 1);
-
-            int num2 = dispositionLigne2[col];
-            Pokemon pVert2 = new Pokemon(num2, Type.getEspece(num2));
-            grille[1][col] = new Case(pVert2, 1);
-
-            int num8 = dispositionLigne2[col];
-            Pokemon pRouge8 = new Pokemon(num8, Type.getEspece(num8));
-            grille[7][col] = new Case(pRouge8, 2);
-
-            int num9 = dispositionLigne1[col];
-            Pokemon pRouge9 = new Pokemon(num9, Type.getEspece(num9));
-            grille[8][col] = new Case(pRouge9, 2);
+            grille[0][col] = new Case(new Pokemon(vl1[col], Type.getEspece(vl1[col])), 1);
+            grille[1][col] = new Case(new Pokemon(vl2[col], Type.getEspece(vl2[col])), 1);
+            grille[2][col] = new Case(new Pokemon(vl3[col], Type.getEspece(vl3[col])), 1);
+            grille[6][col] = new Case(new Pokemon(rl3[col], Type.getEspece(rl3[col])), 2);
+            grille[7][col] = new Case(new Pokemon(rl2[col], Type.getEspece(rl2[col])), 2);
+            grille[8][col] = new Case(new Pokemon(rl1[col], Type.getEspece(rl1[col])), 2);
         }
     }
 
@@ -44,20 +44,18 @@ class Plateau {
         grille[ligneDepart][colDepart] = new Case();
     }
 
-    public void attaquer(int lignAtt, int colAtt, int ligneDef, int colDef) {
-        Case caseAtt = grille[lignAtt][colAtt];
+    public void attaquer(int ligneAtt, int colAtt, int ligneDef, int colDef) {
+        Case caseAtt = grille[ligneAtt][colAtt];
         Case caseDef = grille[ligneDef][colDef];
         Pokemon attaquant = caseAtt.getPokemon();
         Pokemon defenseur = caseDef.getPokemon();
-
-        int degats = attaquant.getAttaque() - defenseur.getDefense();
-        if (degats < 1) degats = 1;
 
         double efficacite = Type.getEfficacite(attaquant.getType1(), defenseur.getType1());
         if (defenseur.getType2() != Type.SANS) {
             efficacite *= Type.getEfficacite(attaquant.getType1(), defenseur.getType2());
         }
-        degats = (int)(degats * efficacite);
+
+        int degats = (int)((attaquant.getAttaque() - defenseur.getDefense()) * efficacite);
         if (degats < 1) degats = 1;
 
         defenseur.setPv(defenseur.getPv() - degats);
